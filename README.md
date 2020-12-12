@@ -4,7 +4,7 @@
 
   - 김준호, 김응빈, 이수창, 김한결
 
-## Day1 라즈베리파이 with Cat.m1
+## Day1 라즈베리파이 with Cat.1
 
   - 관련 자료 : https://github.com/codezoo-ltd/CodeZoo_CATM1_Arduino/
   
