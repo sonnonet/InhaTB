@@ -8,7 +8,10 @@
 
   - 관련 자료 : https://github.com/codezoo-ltd/CodeZoo_CATM1_Arduino/
   
-  - 소스 코드 다운 : git clone https://github.com/codezoo-ltd/CAT.M1_RaspberryPi.git
+  - 라즈베리파이 소스 코드 다운 : 
+    ```
+      git clone https://github.com/codezoo-ltd/CAT.M1_RaspberryPi.git
+    ```
   
   - 메카솔루션 구입사이트 : http://mechasolution.com/shop/goods/goods_view.php?goodsno=587303&category=
       - 해외 구매 : https://sixfab.com/product/raspberry-pi-lte-m-nb-iot-egprs-cellular-hat/
