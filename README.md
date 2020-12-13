@@ -19,3 +19,7 @@
       - 해외 구매 : https://sixfab.com/product/raspberry-pi-lte-m-nb-iot-egprs-cellular-hat/
   
   - 유튜브 워크샵 강의 : https://www.youtube.com/watch?v=jwWaikdWkNA&feature=youtu.be 
+  
+## Day2 STM32CUBEMX
+  - STM32 Gcamp 밴드 주소 : https://band.us/n/a9ab430eQ7f7L
+  
