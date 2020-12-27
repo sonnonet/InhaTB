@@ -45,6 +45,7 @@ HAL_Delay(1000);
   write_MISE("Passive");
   
   void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  
 	if(huart->Instance == USART3) {
 		print_MISE();
 	}
@@ -52,6 +53,7 @@ HAL_Delay(1000);
   
   void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
   {
+  
 	if(huart->Instance==USART3)
 	{
 	}
@@ -59,6 +61,7 @@ HAL_Delay(1000);
   
   void print_MISE(void)
   {
+  
 	uint16_t combine_value, check_byte_receive, check_byte_calculate=0;
 
 	check_byte_receive=mise_buffer[30]<<8|mise_buffer[31];
@@ -84,6 +87,7 @@ HAL_Delay(1000);
   
   void write_MISE(char* cmd)
   {
+ 
 	uint16_t verify_byte=0;
 
 	printf("Enter the write_MISE\r\n");
