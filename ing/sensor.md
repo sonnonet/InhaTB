@@ -5,7 +5,7 @@
 #### Sensor 연결 : PA9 <-> D8번 Pin
 #### Pinout 이미지
 #### Test_Code
-while (1)
+while (1) \n
   {
 	  if (HAL_GPIO_ReadPin(Sensor_GPIO_Port, Sensor_Pin))
 		  printf("Detected!!!\r\n");
