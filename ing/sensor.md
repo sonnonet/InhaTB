@@ -35,7 +35,6 @@ HAL_Delay(1000);
 
 ### 미세먼지 센서(PM2008)
 #### Pin Image
-#### Sensor 연결 : PA1 <-> A1번 Pin
 #### UART 연결 : USART3_TX [PB10 <-> D6], USART3_RX [PB11 <-> CN10->18]
 #### Test Code
   uint8_t mise_buffer[32];
