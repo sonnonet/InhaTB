@@ -2,7 +2,7 @@
 
 ## STM32F072RB 보드 사용
 ## Pinout 이미지
-![PIR_Sensor](https://user-images.githubusercontent.com/50731733/103164399-2926f500-484e-11eb-9498-354f042f49ff.PNG)
+![Pinout](https://user-images.githubusercontent.com/50731733/103193468-de75ad80-491f-11eb-9c9f-5563fff988a7.PNG)
 
 ### PIR sensor (적외선 인체감지 센서)
 #### Sensor 연결 : PA9 <-> D8번 Pin
