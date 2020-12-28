@@ -34,10 +34,10 @@ HAL_GPIO_WritePin(Relay_GPIO_Port, Relay_Pin, RESET);
 HAL_Delay(1000);  
 
 ### 미세먼지 센서(PM2008)
-#### Pin 
+#### Pin Image
 #### Sensor 연결 : PA1 <-> A1번 Pin
 #### UART 연결 : USART3_TX [PB10 <-> D6], USART3_RX [PB11 <-> CN10->18]
-### Test Code
+#### Test Code
   uint8_t mise_buffer[32];
   uint8_t mise_send_buffer[7] = {0x42,0x4d,0};
   
@@ -154,3 +154,23 @@ HAL_Delay(1000);
 	printf("%d\r\n", mise_send_buffer);
   }
   
+### LCD
+#### Pin Image
+![LCD_Pin](https://user-images.githubusercontent.com/50731733/103191404-3a3c3880-4918-11eb-968e-d4522ebcd6c6.PNG)
+출처 : https://learn.sparkfun.com/tutorials/avr-based-serial-enabled-lcds-hookup-guide/i2c-hardware-hookup--example-code---basic
+#### Library
+https://github.com/MarioHesse/SparkFun_SerLCD_STM32_Library
+#### Test Code
+  while (1)
+  {
+	  status_lcd = displayInit(&hi2c1);
+	  printf("test\r\n");
+	  displayWriteString("TEST");
+	  HAL_Delay(2000);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+#### Test 결과 이미지
+![LCD_Test_Result](https://user-images.githubusercontent.com/50731733/103191499-930bd100-4918-11eb-9bca-0772210a31d0.jpg)
+
