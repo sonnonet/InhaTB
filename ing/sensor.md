@@ -161,16 +161,15 @@ HAL_Delay(1000);
 #### Library
 https://github.com/MarioHesse/SparkFun_SerLCD_STM32_Library
 #### Test Code
-  while (1)
-  {
-	  status_lcd = displayInit(&hi2c1);
-	  printf("test\r\n");
-	  displayWriteString("TEST");
-	  HAL_Delay(2000);
-    /* USER CODE END WHILE */
+  while (1)  
+  {  
+	  status_lcd = displayInit(&hi2c1);  
+	  printf("test\r\n");  
+	  displayWriteString("TEST");  
+	  HAL_Delay(2000);  
+    /* USER CODE END WHILE */  
 
     /* USER CODE BEGIN 3 */
   }
 #### Test 결과 이미지
-![LCD_Test_Result](https://user-images.githubusercontent.com/50731733/103191499-930bd100-4918-11eb-9bca-0772210a31d0.jpg)
-
+![LCD_Test_Result](https://user-images.githubusercontent.com/50731733/103191580-dcf4b700-4918-11eb-928b-34a5eff737ff.PNG)
