@@ -157,7 +157,8 @@ HAL_Delay(1000);
 ### LCD
 #### Pin Image
 ![LCD_Pin](https://user-images.githubusercontent.com/50731733/103191404-3a3c3880-4918-11eb-968e-d4522ebcd6c6.PNG)
-출처 : https://learn.sparkfun.com/tutorials/avr-based-serial-enabled-lcds-hookup-guide/i2c-hardware-hookup--example-code---basic
+
+이미지 출처 : https://learn.sparkfun.com/tutorials/avr-based-serial-enabled-lcds-hookup-guide/i2c-hardware-hookup--example-code---basic
 #### Library
 https://github.com/MarioHesse/SparkFun_SerLCD_STM32_Library
 #### Test Code
