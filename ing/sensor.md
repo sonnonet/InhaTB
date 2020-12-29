@@ -9,15 +9,17 @@
 ![PIR_Sensor2](https://user-images.githubusercontent.com/50731733/103165981-a14ae600-4861-11eb-9482-086d709e7ba1.PNG)
 
 이미지 출처 : https://m.blog.naver.com/PostView.nhn?blogId=eduino&logNo=220892296492&proxyReferer=https:%2F%2Fwww.google.com%2F
-#### Test Code
- while (1)  
+#### Test Code 
+``` 
+while (1)  
   {  
 	  if (HAL_GPIO_ReadPin(Sensor_GPIO_Port, Sensor_Pin))  
 		  printf("Detected!!!\r\n");  
 	  else  
 		  printf("No Detected...\r\n");  
 	  HAL_Delay(1000);  
-  }  
+  } 
+ ``` 
 #### Test 결과 이미지
 ![PIR_Sensor_Test_Result](https://user-images.githubusercontent.com/50731733/103164499-5aec8b80-484f-11eb-9f65-072e5b4a6eb0.PNG)
 
@@ -28,15 +30,18 @@
 이미지 출처 : https://it-g-house.tistory.com/entry/Arduino-%EC%95%84%EB%91%90%EC%9D%B4%EB%85%B8-%EB%A6%B4%EB%A0%88%EC%9D%B4-Relay-%EC%8A%A4%EC%9C%84%EC%B9%98-%EC%82%AC%EC%9A%A9%EB%B0%A9%EB%B2%95
 #### 연결 : PB5 <-> D4
 #### Test Code
+``` c
 HAL_GPIO_WritePin(Relay_GPIO_Port, Relay_Pin, SET);  
 HAL_Delay(1000);  
 HAL_GPIO_WritePin(Relay_GPIO_Port, Relay_Pin, RESET);  
-HAL_Delay(1000);  
+HAL_Delay(1000);
+```
 
 ### 미세먼지 센서(PM2008)
 #### Pin Image
 #### UART 연결 : USART3_TX [PB10 <-> D6], USART3_RX [PB11 <-> CN10->18]
 #### Test Code
+``` c
   uint8_t mise_buffer[32];
   uint8_t mise_send_buffer[7] = {0x42,0x4d,0};
   
@@ -152,7 +157,7 @@ HAL_Delay(1000);
 
 	printf("%d\r\n", mise_send_buffer);
   }
-  
+```
 ### LCD
 #### Pin Image
 ![LCD_Pin](https://user-images.githubusercontent.com/50731733/103191404-3a3c3880-4918-11eb-968e-d4522ebcd6c6.PNG)
@@ -161,6 +166,7 @@ HAL_Delay(1000);
 #### Library
 https://github.com/MarioHesse/SparkFun_SerLCD_STM32_Library
 #### Test Code
+``` c
   while (1)  
   {  
 	  status_lcd = displayInit(&hi2c1);  
@@ -171,5 +177,6 @@ https://github.com/MarioHesse/SparkFun_SerLCD_STM32_Library
 
     /* USER CODE BEGIN 3 */
   }
+```
 #### Test 결과 이미지
 ![LCD_Test_Result](https://user-images.githubusercontent.com/50731733/103191580-dcf4b700-4918-11eb-928b-34a5eff737ff.PNG)
