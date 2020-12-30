@@ -7,5 +7,7 @@
   
 ## 소프트웨어
   - ThingsPark(https://thingspark.co.kr/)
+  - [STM32Cube.AI and motion sensing](https://wiki.st.com/stm32mcu/wiki/Getting_started_with_STM32Cube.AI_and_motion_sensing_on_the_STM32L4_IoT_node#Open_main-c)
+  
 
 
