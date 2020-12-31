@@ -37,7 +37,7 @@
   
       <img width="" height="" src="./png/컨셉.png"></img>
       
-  - 프로젝트 구성도
+  - 프로젝트 시스템 구성도
   
     <img width="" height="" src="./png/시스템구성도.png"></img>
         
