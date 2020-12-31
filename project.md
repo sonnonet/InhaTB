@@ -33,5 +33,5 @@
 
      - 자연환기의 중요성 (출처 : wadiz.kr)
      
-           <img width="500" height="300" src="./png/환기.png"></img>
+        <img width="500" height="300" src="./png/환기.png"></img>
      
