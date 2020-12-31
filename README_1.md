@@ -23,3 +23,7 @@
 ## Day2 STM32CUBEMX
   - STM32 Gcamp 밴드 주소 : https://band.us/n/a9ab430eQ7f7L
   
+  
+## 해커톤 전체 영상 주소
+   - https://www.seoulhackathon.org/tag/shh2021_workshops
+  
