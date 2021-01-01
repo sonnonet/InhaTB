@@ -10,7 +10,13 @@
   - [ThingsPark IoT Cloud Service](https://www.theksystem.com)
   - [STM32Cube.AI and motion sensing](https://wiki.st.com/stm32mcu/wiki/Getting_started_with_STM32Cube.AI_and_motion_sensing_on_the_STM32L4_IoT_node#Open_main-c)
   - [L475VG_IOT01A_wifi](https://github.com/devinbrown7/DISCO_L475VG_IOT01A_wifi)
-  
-  
+ 
+ 
+## AI
+### 데이터 셋
 
+  - Age, 성별, 최대 심박수 추가
+  - 미세먼지
+      - 요리,환경품질,인체감지 -> 이상징후
+  - 
 
