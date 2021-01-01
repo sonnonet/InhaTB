@@ -67,6 +67,7 @@ R_LED.off()
 ```
 
 ---
+##### 팀원 .
 ### Philips Hue <-> Raspberry Pi <-> Telegram
 1. 필요한 라이브러리 Import
 ``` python
@@ -235,3 +236,4 @@ def light_color_error(color1, color2, color3):
     else:
         return 0
 ```
+---
