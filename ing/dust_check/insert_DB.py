@@ -5,7 +5,7 @@ from time import sleep
 url = "https://api.thingspark.co.kr/update"
 
 params = {
-        "apiKey" : "n1bhXYshCWi3lVHW"
+        "apiKey" : "API KEY"
 }
 ser = serial.Serial('/dev/ttyAMA0')
 
