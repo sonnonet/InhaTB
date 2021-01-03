@@ -28,12 +28,17 @@
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <math.h>
 #include "usart.h"
 #include "dma.h"
 #include "gpio.h"
 #include "SerLCD.h"
 #include "i2c.h"
 #include "spi.h"
+#include "TH.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,10 +64,11 @@ uint8_t counter = 0;
 
 uint8_t co2_buffer[13];
 uint8_t co2_result_buffer[9];
-uint8_t i_co2 = 0;
+uint8_t co2_result_buffer2[5];
+int i_co2 = 0;
 
 uint8_t mise_buffer[32];
-uint8_t mise_send_buffer[7] = {0x42,0x4d,0};
+
 
 uint8_t pm2_5 = 0;
 uint8_t pm10 = 0;
@@ -72,7 +78,9 @@ char s_pm10[3] = "";
 uint8_t tx_data[6] = {0xA0, 0x00, 0x00, 0xA1, 0x00, 0x00};
 uint8_t rx_data[6];
 
-uint8_t led_flag = 0; // 0 -> green, 1 -> yellow, 2 -> red
+bool pm_flag = FALSE;
+bool co2_flag = FALSE;
+bool temp_flag = FALSE;
 
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
@@ -82,6 +90,12 @@ osThreadId defaultTaskHandle;
 void vTask1(void *pvParameters);
 void vTask2(void *pvParameters);
 void vTask3(void *pvParameters);
+void print_MISE(void);
+void write_MISE(char* cmd);
+void print_co2(void);
+void turnOnRed(void);
+void turnOnGreen(void);
+void turnOnYellow(void);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -143,9 +157,9 @@ void MX_FREERTOS_Init(void) {
   				3,			/* task priority */
   				NULL );		/* task handle. */
 
-  	/* Create the other task in exactly the same way. */
-  	xTaskCreate( vTask2, "Task 2", 128, NULL, 3, NULL );
-  	xTaskCreate( vTask3, "Task 3", 128, NULL, 3, NULL );
+  /* Create the other task in exactly the same way. */
+  xTaskCreate( vTask2, "Task 2", 128, NULL, 3, NULL );
+  xTaskCreate( vTask3, "Task 3", 128, NULL, 3, NULL );
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -161,6 +175,29 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+
+  // pm sensor init
+  if(HAL_UART_Receive_DMA(&huart3,mise_buffer,32) != HAL_OK)
+  {
+	printf("fail\r\n");
+  }
+
+  uint8_t mise_send_buffer[7] = {0x42,0x4d,0};
+  uint16_t verify_byte = 0;
+
+  mise_send_buffer[2] = 0xe1;
+  mise_send_buffer[3] = 0x00;
+  mise_send_buffer[4] = 0x00;
+
+  for(uint8_t i = 0; i < 5; i++)
+  {
+	verify_byte += mise_send_buffer[i];
+  }
+  mise_send_buffer[5] = verify_byte >> 8;
+  mise_send_buffer[6] = verify_byte;
+
+  HAL_UART_Transmit(&huart3, (uint8_t*)mise_send_buffer, 7, 100);
+
   /* Infinite loop */
   for(;;)
   {
@@ -171,196 +208,203 @@ void StartDefaultTask(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void vTask1( void *pvParameters )
+int ipow(int base, int exp)
 {
-	if(HAL_UART_Receive_DMA(&huart3,mise_buffer,32)!=HAL_OK)
-	{
-		printf("fail\r\n");
-	}
-	write_MISE("Passive");
-	/* infinite loop. */
-	for( ;; )
-	{
+    int result = 1;
+    for (;;)
+    {
+        if (exp & 1)
+            result *= base;
+        exp >>= 1;
+        if (!exp)
+            break;
+        base *= base;
+    }
 
-	}
+    return result;
 }
 
-
-void vTask2( void *pvParameters )
+#define SENSOR_NUM 3
+void vTask1(void *pvParameters)
 {
-	/* infinite loop. */
-	for( ;; )
-	{
-		HAL_UART_Receive_IT(&huart4, co2_buffer, 12);
-		displayInit(&hi2c1);
-		if(!pir_status) {
-			displayWriteString("PM2.5 : ");
-			displayWriteString(s_pm2_5);
-			displaySetCursor(0, 1);
-			displayWriteString("PM10  : ");
-			displayWriteString(s_pm10);
-		} else {
-			displayWriteString("CO2 : ");
-			displayWriteString(co2_result_buffer);
+  /* infinite loop. */
+  uint8_t counter = 0;
+  uint8_t seq = 0;
+  uint16_t co2 = 0;
+  float temp = 0.0;
+  float humi = 0.0;
+
+  for( ;; )
+  {
+
+	// particulate matter parsing
+	if (seq % SENSOR_NUM == 0) {
+	  if(pm_flag) {
+		uint16_t combine_value, check_byte_receive, check_byte_calculate=0;
+
+		check_byte_receive = mise_buffer[30] << 8 | mise_buffer[31];
+		for(uint8_t i = 0; i < 30; i++)
+		{
+			check_byte_calculate += mise_buffer[i];
 		}
-		counter++;
-		if(counter >= 5) {
-			counter = 0;
-			pir_status = ~pir_status;
+
+		if(check_byte_receive == check_byte_calculate)
+		{
+			pm2_5 = combine_value = ((mise_buffer[12] << 8) | mise_buffer[13]);
+			pm10 = combine_value = ((mise_buffer[14] << 8) | mise_buffer[15]);
+
+			printf("p%d\r\n", pm2_5);
+			HAL_Delay(100);
+			printf("m%d\r\n", pm10);
+			HAL_Delay(100);
 		}
 
-		i_co2 = atoi(co2_buffer);
-		HAL_Delay(1000);
-	}
-}
+	    sprintf(s_pm2_5, "%d", pm2_5);
+	    sprintf(s_pm10, "%d", pm10);
 
-void vTask3( void *pvParameters ) {
-	for( ;; ) {
-//		HAL_GPIO_TogglePin(Relay_GPIO_Port, Relay_Pin);
-//		HAL_GPIO_TogglePin(Relay2_GPIO_Port, Relay2_Pin);
-//		if(HAL_GPIO_ReadPin(PIR_GPIO_Port, PIR_Pin))
-//			printf("DETECTED!!!\r\n");
-//		else
-//			printf("NO DETECTION...\r\n");
-//		HAL_Delay(1000);
 
-		MX_SPI1_Init();
-		HAL_Delay(1000);
+	    pm_flag = FALSE;
+	  }
+
+	// co2 parsing
+	} else if (seq % SENSOR_NUM == 1) {
+      if (co2_flag) {
+        co2 = 0;
+
+      	if (co2_buffer[6] == ' ' || co2_buffer[7] == 'p'  || co2_buffer[8] == 'p'
+    	  || co2_buffer[9] == 'm'  || co2_buffer[10] != 0x0D
+		  || co2_buffer[11] == 0x0A) {
+
+    	  for(int i = 0; i < 6; i++) {
+    		if(co2_buffer[i] != ' ') {
+    		  //printf("%d, %d, %d \n", co2_buffer[i] - 48, i, ipow(10, 5 - i)); // for debug
+    		  co2 += (co2_buffer[i] - 48) * ipow(10, 5 - i);
+    		}
+    	  }
+    	}
+
+      	// for debug
+      	if (co2 > 1300) co2 = 1300;
+
+    	if(i_co2 < 1000) {
+    	  turnOnGreen();
+    	} else if(i_co2 < 2000) {
+    	  turnOnYellow();
+    	} else {
+    	  turnOnRed();
+    	}
+
+    	printf("c%d\r\n", co2);
+    	HAL_Delay(100);
+
+    	co2_flag = FALSE;
+	  }
+
+    // temperature sensing
+    } else if (seq % SENSOR_NUM == 2) {
 		HAL_GPIO_WritePin(SCE_GPIO_Port, SCE_Pin, RESET);
-		HAL_Delay(1);
 		HAL_SPI_TransmitReceive(&hspi1, tx_data, rx_data, 6, 100);
-		HAL_Delay(1);
 		HAL_GPIO_WritePin(SCE_GPIO_Port, SCE_Pin, SET);
-		for(int i=0; i<6; i++)
-			printf("%2X\r\n", rx_data[i]);
-		HAL_Delay(1000);
+
+        //printf("obj_temp:%d,sen_temp:%d",
+    	//  (rx_data[2] <<8 ) | rx_data[1], (rx_data[4] <<8 ) | rx_data[5]);
+		printf("t%d\r\n", (rx_data[2] <<8 ) | rx_data[1]);
+		HAL_Delay(100);
+        // ===================== HanGyeol modify =======================
+		temp = get_temperature();
+		humi = get_humidity();
+		printf("T%d\r\n", temp);
+		printf("H%d\r\n", humi);
+    }
+
+	printf("\n");
+	HAL_Delay(100);
+	// display to lcd
+	// lcd init
+	displayInit(&hi2c1);
+	//displayClear();
+
+	if(!pir_status) {
+		displayWriteString("PM2.5 : ");
+		displayWriteString(s_pm2_5);
+		displaySetCursor(0, 1);
+		displayWriteString("PM10  : ");
+		displayWriteString(s_pm10);
+	} else {
+		char tmp_val[4];
+		displayWriteString("CO2 : ");
+		displayWriteString(itoa(co2, tmp_val, 10));
+		displayWriteString("PPM");
 	}
+
+
+	seq++;
+	counter++;
+
+	if(counter >= 5) {
+		counter = 0;
+		pir_status = ~pir_status;
+	}
+
+    //printf("seq %d, counter : %d\n", seq, counter); // for debug
+    HAL_Delay(500);
+
+  }
 }
 
 
-void print_MISE(void)
+void vTask2(void *pvParameters)
 {
-	uint16_t combine_value, check_byte_receive, check_byte_calculate=0;
-
-	check_byte_receive=mise_buffer[30]<<8|mise_buffer[31];
-	for(uint8_t i=0;i<30;i++)
-	{
-		check_byte_calculate+=mise_buffer[i];
+  /* infinite loop. */
+  for( ;; )
+  {
+	if(!co2_flag) {
+	  HAL_UART_Receive_IT(&huart4, co2_buffer, 12);
+	  //HAL_UART_Receive_IT(&huart4, co2_buffer, 1);
 	}
-
-	if(check_byte_receive==check_byte_calculate)
-	{
-		printf("PM1.0 : %d	",(combine_value=(mise_buffer[10]<<8)|mise_buffer[11]));
-		printf("PM2.5 : %d	",(combine_value=(mise_buffer[12]<<8)|mise_buffer[13]));
-		printf("PM10 : %d	",(combine_value=(mise_buffer[14]<<8)|mise_buffer[15]));
-		printf("0.3um : %d	",(combine_value=(mise_buffer[16]<<8)|mise_buffer[17]));
-		printf("0.5um : %d	",(combine_value=(mise_buffer[18]<<8)|mise_buffer[19]));
-		printf("1.0um : %d	",(combine_value=(mise_buffer[20]<<8)|mise_buffer[21]));
-		printf("2.5um : %d	",(combine_value=(mise_buffer[22]<<8)|mise_buffer[23]));
-		printf("5.0um : %d	",(combine_value=(mise_buffer[24]<<8)|mise_buffer[25]));
-		printf("10.0um : %d\r\n",(combine_value=(mise_buffer[26]<<8)|mise_buffer[27]));
-		pm2_5 = combine_value=((mise_buffer[12]<<8)|mise_buffer[13]);
-		pm10 = combine_value=((mise_buffer[14]<<8)|mise_buffer[15]);
-	}
-	else
-	{
-	}
+	HAL_Delay(1000);
+  }
 }
 
-void write_MISE(char* cmd)
+void vTask3(void *pvParameters)
 {
-	uint16_t verify_byte=0;
+  for( ;; ) {
 
-	if(strcmp(cmd,"Read")==0)
-	{
-		mise_send_buffer[2]=0xe2;
-		mise_send_buffer[3]=0x00;
-		mise_send_buffer[4]=0x00;
-	}
-	else if(strcmp(cmd,"Passive")==0)
-	{
-		mise_send_buffer[2]=0xe1;
-		mise_send_buffer[3]=0x00;
-		mise_send_buffer[4]=0x00;
-	}
-	else if(strcmp(cmd,"Active")==0)
-	{
-		mise_send_buffer[2]=0xe1;
-		mise_send_buffer[3]=0x00;
-		mise_send_buffer[4]=0x01;
-
-	}
-	else if(strcmp(cmd,"Sleep")==0)
-	{
-		mise_send_buffer[2]=0xe4;
-		mise_send_buffer[3]=0x00;
-		mise_send_buffer[4]=0x00;
-	}
-	else if(strcmp(cmd,"WakeUp")==0)
-	{
-		mise_send_buffer[2]=0xe4;
-		mise_send_buffer[3]=0x00;
-		mise_send_buffer[4]=0x01;
-	}
-	for(uint8_t i=0;i<5;i++)
-	{
-		verify_byte+=mise_send_buffer[i];
-	}
-	mise_send_buffer[5]=verify_byte>>8;
-	mise_send_buffer[6]=verify_byte;
-
-	while(HAL_UART_GetState(&huart3)!=HAL_UART_STATE_READY)
-	{
-	}
-
-	if(HAL_UART_Transmit_IT(&huart3,(uint8_t*)mise_send_buffer,7)!=HAL_OK)
-	{
-
-	}
-	if(strcmp(cmd,"Read")==0)
-	{
-		while(HAL_UART_GetState(&huart3)!=HAL_UART_STATE_READY)
-		{
-		}
-		if(HAL_UART_Receive_IT(&huart3,mise_send_buffer, 32)!=HAL_OK)
-		{
-
-		}
-	}
-
-	printf("%d\r\n", mise_send_buffer);
+  }
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if(huart->Instance == USART3) {
-		print_MISE();
-		sprintf(s_pm2_5, "%d", pm2_5);
-		sprintf(s_pm10, "%d", pm10);
-	}
-	if(huart->Instance == UART4) {
-		for(int i=0; i<9; i++) {
-			co2_result_buffer[i] = co2_buffer[i+1];
-		}
-		printf("%s\r\n", co2_result_buffer);
-
-		for(int i=0; i<5; i++) {
-			printf("%s", co2_result_buffer[i]);
-		}
-	}
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	if(huart->Instance==USART3)
-	{
-
-	}
+  if(huart->Instance == USART3) {
+	pm_flag = TRUE;
+  }
+  if(huart->Instance == UART4) {
+	co2_flag = TRUE;
+  }
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 	if(GPIO_Pin == URBTN_Pin) {
 		HAL_GPIO_TogglePin(Relay2_GPIO_Port, Relay2_Pin);
 	}
+}
+
+void turnOnRed(void) {
+	HAL_GPIO_WritePin(RED_GPIO_Port, RED_Pin, SET);
+	HAL_GPIO_WritePin(YELLOW_GPIO_Port, YELLOW_Pin, RESET);
+	HAL_GPIO_WritePin(GREEN_GPIO_Port, GREEN_Pin, RESET);
+}
+
+void turnOnYellow(void) {
+	HAL_GPIO_WritePin(RED_GPIO_Port, RED_Pin, RESET);
+	HAL_GPIO_WritePin(YELLOW_GPIO_Port, YELLOW_Pin, SET);
+	HAL_GPIO_WritePin(GREEN_GPIO_Port, GREEN_Pin, RESET);
+}
+
+void turnOnGreen(void) {
+	HAL_GPIO_WritePin(RED_GPIO_Port, RED_Pin, RESET);
+	HAL_GPIO_WritePin(YELLOW_GPIO_Port, YELLOW_Pin, RESET);
+	HAL_GPIO_WritePin(GREEN_GPIO_Port, GREEN_Pin, SET);
 }
 /* USER CODE END Application */
 
